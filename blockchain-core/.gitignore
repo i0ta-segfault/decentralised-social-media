@@ -1,0 +1,23 @@
+/bin/
+build/
+.vscode/
+
+# Ignore OS-specific files
+.DS_Store  # macOS
+Thumbs.db  # Windows
+
+*.exe
+*.out
+*.o
+*.obj
+*.a
+*.lib
+*.so
+*.dll
+
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+
+*.log
+*.tmp
