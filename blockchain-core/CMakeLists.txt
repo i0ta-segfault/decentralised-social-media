@@ -17,10 +17,10 @@ message(STATUS "Source files: ${SOURCES}")
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 
-add_executable(decentweet ${SOURCES})
+add_executable(blockchain_core ${SOURCES})
 
-target_include_directories(decentweet PRIVATE ${OpenSSL_INCLUDE_DIR})
+target_include_directories(blockchain_core PRIVATE ${OpenSSL_INCLUDE_DIR})
 
-target_link_libraries(decentweet OpenSSL::SSL OpenSSL::Crypto)
+target_link_libraries(blockchain_core OpenSSL::SSL OpenSSL::Crypto)
 
-target_compile_options(decentweet PRIVATE -Wzero-as-null-pointer-constant)
+target_compile_options(blockchain_core PRIVATE -Wzero-as-null-pointer-constant)
