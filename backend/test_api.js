@@ -93,7 +93,6 @@ let blockPayload = {
         wallet_balance: 500
       }
     },
-    // Add more transactions if needed
   ]
 };
 
