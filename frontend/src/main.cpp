@@ -7,12 +7,12 @@ int main(){
     InitWindow(screenWidth, screenHeight, "OOP Project");
     while(!WindowShouldClose()){
         BeginDrawing();
-            ClearBackground(RAYWHITE);
+            ClearBackground(BLACK);
             if(!loginSuccessfulProceed){
                 renderWalletWindow(screenWidth, screenHeight);
             }
             else{
-                renderFeedWindow(screenWidth, screenHeight);
+                renderFeedWindow(screenWidth, screenHeight, userIDLogin);
             }
         EndDrawing();
     }

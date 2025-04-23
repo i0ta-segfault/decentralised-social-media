@@ -6,6 +6,9 @@
 #include <sstream>
 #include <iostream>
 
-void renderFeedWindow(int screenWidth, int screenHeight);
+bool sendPostRequest(const std::string& postContent, const std::string& userID, int post_type);
+size_t WriteCallback(void *contents, size_t size, size_t nmemb, void *userp);
+void renderFeedWindow(int screenWidth, int screenHeigh, std::string userID);
+std::string getTimeStamp();
 
 #endif

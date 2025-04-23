@@ -21,7 +21,7 @@ static bool drawSuccessLogin = false;
 
 bool loginSuccessfulProceed = false;
 
-std::string getTimeStamp(){
+std::string getTimeStampW(){
     std::time_t t = std::time(nullptr);
     std::tm* now = std::localtime(&t);
     std::ostringstream oss;
@@ -34,7 +34,7 @@ std::string getTimeStamp(){
     return oss.str();
 }
 
-size_t WriteCallback(void *contents, size_t size, size_t nmemb, void *userp) {
+size_t WriteCallbackW(void *contents, size_t size, size_t nmemb, void *userp) {
     ((std::string*)userp)->append((char*)contents, size * nmemb);
     return size * nmemb;
 }
@@ -46,7 +46,7 @@ void sendWalletCreationRequest(const std::string& publicKey, const std::string& 
     curl = curl_easy_init();
     if (curl) {
         const std::string url = "http://localhost:3000/wallet/create";
-        std::string postData = "wallet_public_key=" + publicKey + "&user_id=" + userID + "&txn_time=" + getTimeStamp();
+        std::string postData = "wallet_public_key=" + publicKey + "&user_id=" + userID + "&txn_time=" + getTimeStampW();
         struct curl_slist *headers = NULL;
         headers = curl_slist_append(headers, "Content-Type: application/x-www-form-urlencoded");
         curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
@@ -54,7 +54,7 @@ void sendWalletCreationRequest(const std::string& publicKey, const std::string& 
         curl_easy_setopt(curl, CURLOPT_POSTFIELDS, postData.c_str());
         curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
         std::string response;
-        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallbackW);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
         res = curl_easy_perform(curl);
         if (res != CURLE_OK) {
@@ -70,16 +70,19 @@ void sendWalletCreationRequest(const std::string& publicKey, const std::string& 
 
 bool sendWalletLoginRequest(const std::string& privateKey, const std::string& userID){
     std::string message = "login_message_for";
-    std::string combined = generatePublicKey(privateKey) + message;  // _public_login_message_for
-    std::string result = combined + "_sign_";  // _public_login_message_for_sign_
-    
+    std::string combined = generatePublicKey(privateKey, userID) + message;
+    std::string result = combined + "_sign_";
+
     CURL *curl;
     CURLcode res;
     curl_global_init(CURL_GLOBAL_DEFAULT);
     curl = curl_easy_init();
     if (curl) {
         const std::string url = "http://localhost:3000/wallet/login";
-        std::string postData = "wallet_public_key=" + generatePublicKey(privateKey) + "&message_unsigned=" + message + "&message_signed=" + result;
+        std::string postData = "wallet_public_key=" + generatePublicKey(privateKey, userID) +
+                               "&message_unsigned=" + message + 
+                               "&message_signed=" + result;
+
         struct curl_slist *headers = NULL;
         headers = curl_slist_append(headers, "Content-Type: application/x-www-form-urlencoded");
 
@@ -89,30 +92,33 @@ bool sendWalletLoginRequest(const std::string& privateKey, const std::string& us
         curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
 
         std::string response;
-        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallbackW);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
 
         res = curl_easy_perform(curl);
 
-        if (res != CURLE_OK) {
-            std::cerr << "curl_easy_perform() failed: " << curl_easy_strerror(res) << std::endl;
-            curl_easy_cleanup(curl);
-            curl_slist_free_all(headers);
-            curl_global_cleanup();
-            return false;
-        } 
-        else {
+        bool success = false;
+        if (res == CURLE_OK) {
             std::cout << "Response: " << response << std::endl;
+            if (response.find("Login successful") != std::string::npos) {
+                success = true;
+            }
+        } else {
+            std::cerr << "curl_easy_perform() failed: " << curl_easy_strerror(res) << std::endl;
         }
+
         curl_easy_cleanup(curl);
         curl_slist_free_all(headers);
+        curl_global_cleanup();
+        return success;
     }
+
     curl_global_cleanup();
-    return true;
+    return false;
 }
 
-std::string generatePublicKey(const std::string& privateKey) {
-    return "_public_";
+std::string generatePublicKey(const std::string& privateKey, const std::string& userID) {
+    return userID + "_public_";
 }
 
 void renderSignUp(int screenWidth, int screenHeight) {
@@ -180,7 +186,7 @@ void renderSignUp(int screenWidth, int screenHeight) {
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
         Vector2 mousePos = GetMousePosition();
         if (CheckCollisionPointRec(mousePos, createButtonArea)) {
-            publicKey = generatePublicKey(privateKey);
+            publicKey = generatePublicKey(privateKey, userID);
             if(!publicKey.empty() && !userID.empty())
                 sendWalletCreationRequest(publicKey, userID);
             else
@@ -264,6 +270,7 @@ void renderLogin(int screenWidth, int screenHeight) {
                     drawSuccessLogin = true;
                     loginSuccessfulProceed = true;
                     std::cout << "login successfult" << std::endl;
+                    std::cout << userIDLogin << std::endl;
                 }
             else
                 std::cout << "user id and private key empty" << std::endl;

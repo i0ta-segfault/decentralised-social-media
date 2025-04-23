@@ -11,8 +11,14 @@ function generateWalletAddress(pub_key){
     return pub_key + "_address_";
 }
 
-function verifyNameSakeSignature(pub_key, msg_unsigned, msg_signed){
-    return (msg_signed === pub_key + msg_unsigned + "_sign_");
+function verifyNameSakeSignature(pub_key, msg_unsigned, msg_signed, user_id){
+    console.log(pub_key);
+    console.log(msg_unsigned);
+    console.log(msg_signed);
+    console.log(user_id);
+    let res = pub_key + msg_unsigned + "_sign_"
+    console.log(res);
+    return (msg_signed === res);
 }
 
 async function setupDB() {
@@ -139,7 +145,7 @@ router.post('/wallet/login', async (req, res) => {
     if(!user_id) {
         return res.status(404).json({ error: 'User not found' });
     }
-    const isValid = verifyNameSakeSignature(wallet_public_key, message_unsigned, message_signed);
+    const isValid = verifyNameSakeSignature(wallet_public_key, message_unsigned, message_signed, user_id);
     if (!isValid) {
         return res.status(401).json({ error: 'Invalid signature' });
     }
