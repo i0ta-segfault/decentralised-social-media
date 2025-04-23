@@ -3,7 +3,7 @@ let txns = []
 let block_id_ctr = 1000;
 
 function bundleIntoBlock(threshold){
-    if (txns.length === threshold){
+    if (txns.length <= threshold){
         const payload = {
             validator_id: 1023, //hardcoding this for now
             block_id: Math.floor(Math.random() * block_id_ctr) + 1,
@@ -15,7 +15,6 @@ function bundleIntoBlock(threshold){
             console.log("consensus blockchain api hit:");
             console.log(response.data);
             txns.length = 0;
-            txns = [];
         })
         .catch(error => {
             console.error("unable to hit consensus blockchain api:");
